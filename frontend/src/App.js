@@ -6,13 +6,14 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [lilaResponse, setLilaResponse] = useState("");
   const [displayedResponse, setDisplayedResponse] = useState("");
-
+  const savedMessages = JSON.parse(localStorage.getItem("lila-chat-log") || "[]");
+  console.log("Saved Message: ", savedMessages)
   useEffect(() => {
     if (!lilaResponse) return;
   
     let index = 0;
     let current = "";
-  
+
     const interval = setInterval(() => {
       current += lilaResponse.charAt(index);
       setDisplayedResponse(current);
@@ -24,7 +25,7 @@ function App() {
         setDisplayedResponse(""); // clear animation string
       }
     }, 25);
-  
+
     return () => clearInterval(interval);
   }, [lilaResponse]);
   
@@ -47,26 +48,7 @@ function App() {
     const data = await res.json();
     const reply = data?.reply || ""; // prevent undefined
     setLilaResponse(reply);
-  //  setReply(data.reply);
-   // const lilaReply = { role: "lila", content: data.reply };
-    //setMessages(prev => [...prev, lilaReply]);
-    // setMessages((prev) => [...prev, { role: "lila", content: reply }]);
-
-    // setInput("");
-    // let index = 0;
-    // setDisplayedResponse(""); // reset before animation
-    // const interval = setInterval(() => {
-    //   setDisplayedResponse((prev) => prev + reply[index]);
-    //   index++;
-
-    //   if (index === reply.length) {
-    //     clearInterval(interval);
-
-    //     // Push full reply after animation is done
-    //     setMessages((prev) => [...prev, { role: "lila", content: reply }]);
-    //     setDisplayedResponse("");
-    //   }
-    // }, 20);
+    localStorage.setItem("lila-chat-log", JSON.stringify(messages));
   } catch (error) {
     console.error("Lila had a moment:", error);
   }
@@ -84,6 +66,14 @@ function App() {
 
     
       <div className="chat-display">
+        <div>
+          {savedMessages.map((msg,idx)=> (
+            <div key={idx} className={`message-bubble ${msg.role === "user" ? "user" : "lila"}`}>
+              {msg.content}
+              </div>
+          ))}
+          <p>----------------------------------------------------------------------------------------------</p>
+        </div>
       {messages.map((msg, idx) => (
         <div
           key={idx}
