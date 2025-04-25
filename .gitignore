@@ -1,0 +1,5 @@
+lila-env/
+backend/__pycache__/
+.env
+*.log
+frontend/node_modules
