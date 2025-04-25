@@ -1,16 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function App() {
   const [input, setInput] = useState("");
   const [mood, setMood] = useState("Flirty");
   const [messages, setMessages] = useState([]);
+  const [lilaResponse, setLilaResponse] = useState("");
+  const [displayedResponse, setDisplayedResponse] = useState("");
+
+  useEffect(() => {
+    if (!lilaResponse) return;
+  
+    let index = 0;
+    let current = "";
+  
+    const interval = setInterval(() => {
+      current += lilaResponse.charAt(index);
+      setDisplayedResponse(current);
+      index++;
+  
+      if (index >= lilaResponse.length) {
+        clearInterval(interval);
+        setMessages((prev) => [...prev, { role: "lila", content: lilaResponse }]); // push final
+        setDisplayedResponse(""); // clear animation string
+      }
+    }, 25);
+  
+    return () => clearInterval(interval);
+  }, [lilaResponse]);
+  
 
   const handleSend = async () => {
     if (!input.trim()) return;
 
     const userMessage = { role: "user", content: input };
     setMessages(prev => [...prev, userMessage]);
-
+    setInput("");
+    try {
     const res = await fetch("http://127.0.0.1:8000/chat", {
       method: "POST",
       headers: {
@@ -20,10 +45,31 @@ function App() {
     });
 
     const data = await res.json();
+    const reply = data?.reply || ""; // prevent undefined
+    setLilaResponse(reply);
   //  setReply(data.reply);
-    const lilaReply = { role: "lila", content: data.reply };
-    setMessages(prev => [...prev, lilaReply]);
-    setInput("");
+   // const lilaReply = { role: "lila", content: data.reply };
+    //setMessages(prev => [...prev, lilaReply]);
+    // setMessages((prev) => [...prev, { role: "lila", content: reply }]);
+
+    // setInput("");
+    // let index = 0;
+    // setDisplayedResponse(""); // reset before animation
+    // const interval = setInterval(() => {
+    //   setDisplayedResponse((prev) => prev + reply[index]);
+    //   index++;
+
+    //   if (index === reply.length) {
+    //     clearInterval(interval);
+
+    //     // Push full reply after animation is done
+    //     setMessages((prev) => [...prev, { role: "lila", content: reply }]);
+    //     setDisplayedResponse("");
+    //   }
+    // }, 20);
+  } catch (error) {
+    console.error("Lila had a moment:", error);
+  }
   };
 
   return (
@@ -46,6 +92,13 @@ function App() {
           {msg.content}
         </div>
       ))}
+
+      {/* Show animated response only if it exists */}
+      {displayedResponse && (
+        <div className="message-bubble lila">
+          {displayedResponse}
+        </div>
+      )}
     </div>
     <br />
       <textarea value={input} onChange={(e) => setInput(e.target.value)} />
