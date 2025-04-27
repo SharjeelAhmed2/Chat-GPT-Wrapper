@@ -131,6 +131,12 @@ header {
 .send-button:hover {
   background-color: #e0559a;
 }
+.timestamp {
+  font-size: 0.7rem;
+  color: #666;
+  margin-bottom: 4px;
+  text-align: right; /* You can also try left if you want */
+}
 footer {
   display: flex;
   padding: 10px;

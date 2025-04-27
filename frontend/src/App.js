@@ -8,7 +8,13 @@ function App() {
   const [displayedResponse, setDisplayedResponse] = useState("");
   // const savedMessages = JSON.parse(localStorage.getItem("lila-chat-log") || "[]");
   // console.log("Saved Message: ", savedMessages)
-
+  const now = new Date();
+  const timestamp = now.toLocaleString('en-US', { 
+    hour: 'numeric', 
+    minute: 'numeric', 
+    hour12: true, 
+    weekday: 'long' // This gives you the day, like "Saturday"
+  });
   useEffect(() => {
     if (messages.length > 0) {
       localStorage.setItem("lila-chat-log", JSON.stringify(messages));
@@ -36,7 +42,7 @@ function App() {
   
       if (index >= lilaResponse.length) {
         clearInterval(interval);
-        setMessages((prev) => [...prev, { role: "lila", content: lilaResponse }]); // push final
+        setMessages((prev) => [...prev, { role: "lila", content: lilaResponse, timestamp: timestamp  }]); // push final
         setDisplayedResponse(""); // clear animation string
       }
     }, 25);
@@ -48,7 +54,7 @@ function App() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMessage = { role: "user", content: input };
+    const userMessage = { role: "user", content: input, timestamp: timestamp  };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     try {
@@ -85,6 +91,9 @@ function App() {
           key={idx}
           className={`message-bubble ${msg.role === "user" ? "user" : "lila"}`}
         >
+             <div className="timestamp">
+        {msg.timestamp}
+      </div>
           {msg.content}
         </div>
       ))}
