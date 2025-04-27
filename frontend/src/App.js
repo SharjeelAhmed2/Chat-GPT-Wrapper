@@ -6,8 +6,23 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [lilaResponse, setLilaResponse] = useState("");
   const [displayedResponse, setDisplayedResponse] = useState("");
-  const savedMessages = JSON.parse(localStorage.getItem("lila-chat-log") || "[]");
-  console.log("Saved Message: ", savedMessages)
+  // const savedMessages = JSON.parse(localStorage.getItem("lila-chat-log") || "[]");
+  // console.log("Saved Message: ", savedMessages)
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem("lila-chat-log", JSON.stringify(messages));
+      console.log("Chat log saved to localStorage:", messages);
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("lila-chat-log") || "[]");
+    if (saved.length > 0) {
+      setMessages(saved);
+    }
+  }, []);
+  
   useEffect(() => {
     if (!lilaResponse) return;
   
@@ -48,7 +63,6 @@ function App() {
     const data = await res.json();
     const reply = data?.reply || ""; // prevent undefined
     setLilaResponse(reply);
-    localStorage.setItem("lila-chat-log", JSON.stringify(messages));
   } catch (error) {
     console.error("Lila had a moment:", error);
   }
@@ -66,14 +80,6 @@ function App() {
 
     
       <div className="chat-display">
-        <div>
-          {savedMessages.map((msg,idx)=> (
-            <div key={idx} className={`message-bubble ${msg.role === "user" ? "user" : "lila"}`}>
-              {msg.content}
-              </div>
-          ))}
-          <p>----------------------------------------------------------------------------------------------</p>
-        </div>
       {messages.map((msg, idx) => (
         <div
           key={idx}
