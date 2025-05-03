@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 function App() {
   const [input, setInput] = useState("");
@@ -6,6 +6,8 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [lilaResponse, setLilaResponse] = useState("");
   const [displayedResponse, setDisplayedResponse] = useState("");
+  const chatDisplayRef = useRef(null);
+  const lastMessageRef = useRef(null);
   // const savedMessages = JSON.parse(localStorage.getItem("lila-chat-log") || "[]");
   // console.log("Saved Message: ", savedMessages)
   const now = new Date();
@@ -13,7 +15,7 @@ function App() {
     hour: 'numeric', 
     minute: 'numeric', 
     hour12: true, 
-    weekday: 'long' // This gives you the day, like "Saturday"
+    weekday: 'long', // This gives you the day, like "Saturday"
   });
   useEffect(() => {
     if (messages.length > 0) {
@@ -28,7 +30,15 @@ function App() {
       setMessages(saved);
     }
   }, []);
-  
+  // useEffect(() => {
+  //   if (chatDisplayRef.current) {
+  //     //chatDisplayRef.current.scrollTop = chatDisplayRef.current.scrollHeight;
+  //     lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+  //   }
+  // }, [messages]);
+  useEffect(() => {
+    lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
   useEffect(() => {
     if (!lilaResponse) return;
   
@@ -44,7 +54,10 @@ function App() {
         clearInterval(interval);
         setMessages((prev) => [...prev, { role: "lila", content: lilaResponse, timestamp: timestamp  }]); // push final
         setDisplayedResponse(""); // clear animation string
+
+
       }
+    
     }, 25);
 
     return () => clearInterval(interval);
@@ -75,7 +88,7 @@ function App() {
   };
 
   return (
-    <div className="chat-wrapper">
+    <div className="chat-container">
       <h1>Chat with Lila 💋</h1>
       <select value={mood} onChange={(e) => setMood(e.target.value)}>
         <option value="Flirty">Flirty</option>
@@ -84,11 +97,12 @@ function App() {
         <option value="Gremlin">Gremlin</option>
       </select>
 
-    
-      <div className="chat-display">
+      <div className="chat-wrapper">
+      <div className="chat-display" ref={lastMessageRef}>
       {messages.map((msg, idx) => (
         <div
           key={idx}
+          ref={idx === messages.length - 1 ? lastMessageRef : null}
           className={`message-bubble ${msg.role === "user" ? "user" : "lila"}`}
         >
              <div className="timestamp">
@@ -105,10 +119,18 @@ function App() {
         </div>
       )}
     </div>
-    <br />
-      <textarea value={input} onChange={(e) => setInput(e.target.value)} />
-      <br />
-      <button onClick={handleSend}>Send</button>
+    <div className="input-container">
+    <textarea
+      className="input-field"
+      value={input}
+      onChange={(e) => setInput(e.target.value)}
+      placeholder="Type your sweetest secrets to Lila..."
+    />
+    <button className="send-button" onClick={handleSend}>
+      Send
+    </button>
+      </div>
+    </div>
     </div>
   );
 }
