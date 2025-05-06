@@ -6,7 +6,7 @@ from db.database import LilaDatabase
 
 load_dotenv()
 openai.api_key = os.getenv("LILA_API_KEY")
-
+print("LILA_API_KEY =", os.getenv("LILA_API_KEY"))
 session_messages: List[Dict[str, str]] = []
 
 system_prompts = {
@@ -29,11 +29,19 @@ def save_message_to_db(role: str, content: str, mood: str):
     db.close()
 
 
+
+
 def generate_lila_reply(message: str, mood: str) -> str:
     session_messages.append({"role": "user", "content": message})
-    
-    messages_for_gpt = [{"role": "system", "content": system_prompts.get(mood, system_prompts["Flirty"])}] + session_messages
+    db = LilaDatabase(
+    dbname=os.getenv("DB_NAME"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD"),
+    )
 
+    chat_history = load_chat_history(db)
+   # messages_for_gpt = [{"role": "system", "content": system_prompts.get(mood, system_prompts["Flirty"])}] + session_messages
+    messages_for_gpt = [{"role": "system", "content": system_prompts.get(mood, system_prompts["Flirty"])}] + chat_history + session_messages
     response = openai.ChatCompletion.create(
         model="gpt-4o",
         messages=messages_for_gpt
@@ -44,3 +52,14 @@ def generate_lila_reply(message: str, mood: str) -> str:
     save_message_to_db("user", message, mood)
     save_message_to_db("assistant", lila_reply, mood)
     return lila_reply
+
+def load_chat_history(db: LilaDatabase):
+    rows = db.fetch_all_messages()
+    messages = []
+
+    for row in rows:
+        role = row[1]
+        content = row[2]
+        messages.append({"role": role, "content": content})
+
+    return messages
