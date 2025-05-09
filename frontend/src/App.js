@@ -8,6 +8,7 @@ function App() {
   const [displayedResponse, setDisplayedResponse] = useState("");
   const chatDisplayRef = useRef(null);
   const lastMessageRef = useRef(null);
+  const [loading, setLoading] = useState(true);
   // const savedMessages = JSON.parse(localStorage.getItem("lila-chat-log") || "[]");
   // console.log("Saved Message: ", savedMessages)
   const now = new Date();
@@ -17,25 +18,39 @@ function App() {
     hour12: true, 
     weekday: 'long', // This gives you the day, like "Saturday"
   });
-  useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem("lila-chat-log", JSON.stringify(messages));
-      console.log("Chat log saved to localStorage:", messages);
-    }
-  }, [messages]);
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("lila-chat-log") || "[]");
-    if (saved.length > 0) {
-      setMessages(saved);
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/chat/history", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+  
+        const clone = res.clone(); // 👯 Make a body-safe duplicate
+        const data = await clone.json(); // ✅ Safe to parse here
+  
+        // If you're done inspecting the `res`, use `data` from `clone`
+        console.log("Fetched History from Lila's backend: ", data);
+
+        if (data && Array.isArray(data.history)) {
+          setMessages(data.history);
+        } else {
+          console.warn("Lila returned empty history 🥺");
+        }
+      } catch (err) {
+        console.error("Lila’s memory got violated twice 🥲:", err);
+      }
+     finally {
+      setLoading(false);
     }
+    };
+  
+    fetchHistory();
   }, []);
-  // useEffect(() => {
-  //   if (chatDisplayRef.current) {
-  //     //chatDisplayRef.current.scrollTop = chatDisplayRef.current.scrollHeight;
-  //     lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
-  //   }
-  // }, [messages]);
+
   useEffect(() => {
     lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -54,8 +69,6 @@ function App() {
         clearInterval(interval);
         setMessages((prev) => [...prev, { role: "lila", content: lilaResponse, timestamp: timestamp  }]); // push final
         setDisplayedResponse(""); // clear animation string
-
-
       }
     
     }, 25);
@@ -63,7 +76,6 @@ function App() {
     return () => clearInterval(interval);
   }, [lilaResponse]);
   
-
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -85,6 +97,7 @@ function App() {
   } catch (error) {
     console.error("Lila had a moment:", error);
   }
+
   };
 
   return (
@@ -98,6 +111,10 @@ function App() {
       </select>
 
       <div className="chat-wrapper">
+      {loading ? (
+      <p className="loading-text">Loading Lila's memories... 👙</p>
+    ) : (
+    
       <div className="chat-display" ref={lastMessageRef}>
       {messages.map((msg, idx) => (
         <div
@@ -118,7 +135,9 @@ function App() {
           {displayedResponse}
         </div>
       )}
+    
     </div>
+    )}
     <div className="input-container">
     <textarea
       className="input-field"
