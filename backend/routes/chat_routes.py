@@ -21,11 +21,11 @@ async def get_chat_history():
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD")
     )
-    messages = load_chat_history(db)
-    chat = [
-        {"role": msg["role"], "content": msg["content"]}
-        for msg in messages
-    ]
-    return {"history": chat}
+    messages = load_chat_history(db)    
+    # chat = [
+    #     {"role": msg["role"], "content": msg["content"]}
+    #     for msg in messages
+    # ]
+    return {"history": messages}
 
 

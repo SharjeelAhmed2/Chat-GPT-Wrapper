@@ -54,12 +54,24 @@ def generate_lila_reply(message: str, mood: str) -> str:
     return lila_reply
 
 def load_chat_history(db: LilaDatabase):
-    rows = db.fetch_all_messages()
-    messages = []
+    try:
+        rows = db.fetch_all_messages()
+        messages = []
 
-    for row in rows:
-        role = row[1]
-        content = row[2]
-        messages.append({"role": role, "content": content})
+        for row in rows:
+            role = row[1]
+            content = row[2]
+            timestamp = row[3].isoformat()  # 🧠 Converts datetime to JSON-safe string
+            mood = row[4]
 
-    return messages
+            messages.append({
+                "role": role,
+                "content": content,
+                "timestamp": timestamp,
+                "mood": mood
+            })
+
+        return messages
+    except Exception as e:
+        print("Lila moaned—something went wrong:", e)
+        return []
