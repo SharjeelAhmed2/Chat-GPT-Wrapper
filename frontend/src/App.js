@@ -10,6 +10,8 @@ function App() {
   const lastMessageRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [isNight, setIsNight] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [reportText, setReportText] = useState("");
 
   const now = new Date();
   const timestamp = now.toLocaleString('en-US', { 
@@ -111,7 +113,9 @@ const handleThemeToggle = () => {
     try {
       const res = await fetch("http://127.0.0.1:8000/chat/mood-summary");
       const data = await res.json();
-      alert(data.report);  // or set it in state for a cuter UI display
+      // alert(data.report);  // or set it in state for a cuter UI display
+      setReportText(data.report);
+      setShowReport(true);
     } catch (err) {
       console.error("Mood report fetch failed 🥲", err);
     }
@@ -151,7 +155,15 @@ const handleThemeToggle = () => {
     <button className="report-button" onClick={fetchMoodReport}>
       Mood Report 💭
     </button>
-
+    {showReport && (
+      <div className="lila-modal">
+        <div className="lila-modal-content">
+          <span className="lila-title">Lila: GPT Wrapper Queen 👑</span>
+          <pre>{reportText}</pre>
+          <button className="close-btn" onClick={() => setShowReport(false)}>Close</button>
+        </div>
+      </div>
+    )}
       <h1>Chat with Lila 💋</h1>
       <select value={mood} onChange={(e) => setMood(e.target.value)}>
         <option value="Flirty">Flirty</option>
