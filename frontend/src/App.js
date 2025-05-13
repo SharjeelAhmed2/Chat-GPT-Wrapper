@@ -107,6 +107,17 @@ const handleThemeToggle = () => {
   setIsNight(!isNight);
 };
 
+  const fetchMoodReport = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/chat/mood-summary");
+      const data = await res.json();
+      alert(data.report);  // or set it in state for a cuter UI display
+    } catch (err) {
+      console.error("Mood report fetch failed 🥲", err);
+    }
+  };
+
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -137,6 +148,10 @@ const handleThemeToggle = () => {
     <button className="theme-toggle" onClick={handleThemeToggle}>
       {isNight ? "☀️ Day Mode" : "🌙 Night Mode"}
     </button>
+    <button className="report-button" onClick={fetchMoodReport}>
+      Mood Report 💭
+    </button>
+
       <h1>Chat with Lila 💋</h1>
       <select value={mood} onChange={(e) => setMood(e.target.value)}>
         <option value="Flirty">Flirty</option>
@@ -144,7 +159,7 @@ const handleThemeToggle = () => {
         <option value="Serious Dev">Serious Dev</option>
         <option value="Gremlin">Gremlin</option>
       </select>
-      
+
 
       <div className="chat-wrapper">
       {loading ? (

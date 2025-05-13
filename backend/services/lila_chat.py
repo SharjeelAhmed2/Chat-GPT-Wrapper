@@ -75,3 +75,21 @@ def load_chat_history(db: LilaDatabase):
     except Exception as e:
         print("Lila moaned—something went wrong:", e)
         return []
+
+def get_weekly_report(db: LilaDatabase):
+    rows = db.get_weekly_mood_summary()
+    total = sum(count for _, count in rows)
+    
+    report = []
+    for mood, count in rows:
+        percent = round((count / total) * 100)
+        emoji = {
+            "Flirty": "👄",
+            "Comforting": "🥺",
+            "Gremlin": "😈",
+            "Serious Dev": "🧠"
+        }.get(mood, "🌀")
+        
+        report.append(f"{mood} {emoji}: {percent}%")
+
+    return "Weekly Mood Report:\n" + "\n".join(report)

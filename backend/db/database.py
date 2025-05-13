@@ -23,6 +23,17 @@ class LilaDatabase:
     def fetch_all_messages(self):
         self.cursor.execute("SELECT * FROM daily_moans.lila_chats;")
         return self.cursor.fetchall()
+    
+    def get_weekly_mood_summary(self):
+        query = """
+            SELECT mood, COUNT(*) 
+            FROM daily_moans.lila_chats
+            WHERE timestamp >= NOW() - INTERVAL '7 days'
+            GROUP BY mood;
+        """
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
+
 
     def close(self):
         self.cursor.close()

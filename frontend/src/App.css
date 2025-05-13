@@ -72,6 +72,21 @@ body {
 .theme-toggle:hover {
   transform: scale(1.1);
 }
+.report-button {
+  position: absolute;
+  top: 50px;
+  right: 20px;
+  background-color: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #ff69b4;
+  transition: transform 0.2s ease;
+}
+
+.report-button:hover {
+  transform: scale(1.1);
+}
 .chat-container {
   max-width: 900px; /* Fixed sexy width */
   margin: 0 auto;    /* Center horizontally */
