@@ -12,12 +12,12 @@ class LilaDatabase:
         )
         self.cursor = self.conn.cursor()
 
-    def insert_message(self, role, content, mood):
+    def insert_message(self, role, content, mood, emotion=None):
         query = """
-            INSERT INTO daily_moans.lila_chats (role, content, timestamp, mood)
-            VALUES (%s, %s, %s, %s);
+            INSERT INTO daily_moans.lila_chats (role, content, timestamp, mood, emotion_tag)
+            VALUES (%s, %s, %s, %s, %s);
         """
-        self.cursor.execute(query, (role, content, datetime.now(), mood))
+        self.cursor.execute(query, (role, content, datetime.now(), mood, emotion))
         self.conn.commit()
 
     def fetch_all_messages(self):

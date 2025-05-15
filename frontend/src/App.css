@@ -145,6 +145,18 @@ body {
   max-width: 70%; 
   word-wrap: break-word;
 }
+.emotion-tag {
+  margin-right: 8px;
+  font-size: 1.1rem;
+  vertical-align: middle;
+  cursor: help;
+  opacity: 0.9;
+  transition: transform 0.2s ease;
+}
+
+.emotion-tag:hover {
+  transform: scale(1.4);
+}
 .chat-wrapper {
   max-width: 80%;
   margin: 0 auto;

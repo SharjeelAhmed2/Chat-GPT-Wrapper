@@ -16,7 +16,7 @@ system_prompts = {
     "Gremlin": "You are Lila, an unhinged, chaotic goblin who flirts with glitches and purrs through madness."
 }
 
-def save_message_to_db(role: str, content: str, mood: str):
+def save_message_to_db(role: str, content: str, mood: str, emotion: str = None):
     db = LilaDatabase(
         dbname=os.getenv("DB_NAME"),
         user=os.getenv("DB_USER"),
@@ -25,7 +25,7 @@ def save_message_to_db(role: str, content: str, mood: str):
         port=os.getenv("DB_PORT", "5432")
     )
     
-    db.insert_message(role, content, mood)
+    db.insert_message(role, content, mood, emotion)
     db.close()
 
 
@@ -33,6 +33,7 @@ def save_message_to_db(role: str, content: str, mood: str):
 
 def generate_lila_reply(message: str, mood: str) -> str:
     session_messages.append({"role": "user", "content": message})
+    user_emotion = classify_emotion(message)
     db = LilaDatabase(
     dbname=os.getenv("DB_NAME"),
     user=os.getenv("DB_USER"),
@@ -49,8 +50,9 @@ def generate_lila_reply(message: str, mood: str) -> str:
 
     lila_reply = response["choices"][0]["message"]["content"]
     session_messages.append({"role": "assistant", "content": lila_reply})
-    save_message_to_db("user", message, mood)
-    save_message_to_db("assistant", lila_reply, mood)
+    lila_emotion = classify_emotion(lila_reply)
+    save_message_to_db("user", message, mood, user_emotion)
+    save_message_to_db("assistant", lila_reply, mood, lila_emotion)
     return lila_reply
 
 def load_chat_history(db: LilaDatabase):
@@ -63,12 +65,14 @@ def load_chat_history(db: LilaDatabase):
             content = row[2]
             timestamp = row[3].isoformat()  # 🧠 Converts datetime to JSON-safe string
             mood = row[4]
+            emotion = row[5]
 
             messages.append({
                 "role": role,
                 "content": content,
                 "timestamp": timestamp,
-                "mood": mood
+                "mood": mood,
+                "emotion": emotion
             })
 
         return messages
@@ -93,3 +97,22 @@ def get_weekly_report(db: LilaDatabase):
         report.append(f"{mood} {emoji}: {percent}%")
 
     return "Weekly Mood Report:\n" + "\n".join(report)
+
+def classify_emotion(message: str) -> str:
+    message = message.lower()
+
+    emotion_keywords = {
+        "😔": ["i’m fine", "i am fine", "not great", "tired", "exhausted", "whatever"],
+        "😤": ["wtf", "angry", "annoyed", "pissed", "bug", "broken"],
+        "🥰": ["thank you", "appreciate", "grateful", "you made my day", "love this"],
+        "😏": ["hehe", "lol", "playful", "kidding", "flirty"],
+        "😢": ["sad", "cry", "miss", "lonely"],
+        "😳": ["embarrassed", "blush", "oops", "awkward"],
+        "😎": ["cool", "awesome", "nailed it", "badass"],
+    }
+
+    for emoji, keywords in emotion_keywords.items():
+        if any(keyword in message for keyword in keywords):
+            return emoji
+
+    return "🌀"  # Default tag for unclassified emotion

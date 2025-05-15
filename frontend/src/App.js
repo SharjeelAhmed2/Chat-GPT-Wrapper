@@ -1,5 +1,19 @@
 import { useState, useEffect, useRef } from "react";
-
+const getEmoji = (tag) => {
+  const map = {
+    affectionate: "❤️",
+    sad: "🥺",
+    angry: "😠",
+    playful: "😏",
+    anxious: "😰",
+    tired: "😴",
+    confused: "😵",
+    flirty: "👄",
+    gremlin: "😈",
+    serious: "🧠",
+  };
+  return map[tag?.toLowerCase()] || "💬";
+};
 function App() {
   const [input, setInput] = useState("");
   const [mood, setMood] = useState("Flirty");
@@ -79,7 +93,8 @@ useEffect(() => {
   
       if (index >= lilaResponse.length) {
         clearInterval(interval);
-        setMessages((prev) => [...prev, { role: "lila", content: lilaResponse, timestamp: timestamp  }]); // push final
+        console.log(lilaResponse)
+        setMessages((prev) => [...prev, { role: "lila", content: lilaResponse, timestamp: timestamp,  }]); // push final
         setDisplayedResponse(""); // clear animation string
       }
     
@@ -124,8 +139,8 @@ const handleThemeToggle = () => {
 
   const handleSend = async () => {
     if (!input.trim()) return;
-
-    const userMessage = { role: "user", content: input, timestamp: timestamp  };
+    // const emotion = data?.emotion_tag || "💬"; // <-- assuming you're returning this now!
+    const userMessage = { role: "user", content: input, timestamp: timestamp, };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     try {
@@ -188,6 +203,12 @@ const handleThemeToggle = () => {
              <div className="timestamp">
         {msg.timestamp ? formatTimestamp(msg.timestamp) : ""}
       </div>
+          {/* NEW: Emotion Tag */}
+        {msg.emotion && (
+          <span className="emotion-tag" title={`Detected Emotion: ${msg.emotion}`}>
+            {getEmoji(msg.emotion)}
+          </span>
+        )}
           {msg.content}
         </div>
       ))}
